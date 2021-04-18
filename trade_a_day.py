@@ -15,7 +15,59 @@ with open(r'binance_secrets.yaml') as file:
     # scalar values to Python the dictionary format
     binance_api = yaml.load(file, Loader=yaml.FullLoader)
 
+pair = binance_api["currency_to_trade_with"] + binance_api["crypto_to_invest"]
+test = True
 client = Client(binance_api["api_key"], binance_api["api_secret"])
 
 if client.get_system_status()["status"] != 0:
     print("Binance client is not available")
+
+# get market depth
+#depth = client.get_order_book(symbol=pair)
+
+# TODO check if the trade is possible
+#info = client.get_account_snapshot(type='SPOT')
+#products = client.get_products()
+#print(info)
+
+price = {pair: pd.DataFrame(columns=['date', 'price']), 'error': False}
+
+
+def pairs_trade(msg):
+    """ define how to process incoming WebSocket messages """
+    if msg['e'] != 'error':
+        price[pair].loc[len(price[pair])] = [pd.Timestamp.now(), float(msg['c'])]
+    else:
+        price['error']: True
+
+
+while True:
+    # error check to make sure WebSocket is working
+    if price['error']:
+        # init and start the WebSocket
+        bsm = BinanceSocketManager(client)
+        conn_key = bsm.start_symbol_ticker_socket(pair, pairs_trade)
+        bsm.start()
+        price['error'] = False
+    else:
+        df = price[pair]
+        start_time = df.date.iloc[-1] - pd.Timedelta(minutes=5)
+        df = df.loc[df.date >= start_time]
+        max_price = df.price.max()
+        min_price = df.price.min()
+
+        if df.price.iloc[-1] < max_price * (1-binance_api["down_change_percent"]*0.01):
+            try:
+                if test:
+                    order = client.create_test_order(symbol=pair, quantity=binance_api["daily_amount"])
+                else:
+                    order = client.order_market_buy(symbol=pair, quantity=binance_api["daily_amount"])
+                break
+            except BinanceAPIException as e:
+                # error handling goes here
+                print(e)
+            except BinanceOrderException as e:
+                # error handling goes here
+                print(e)
+
+    time.sleep(0.1)
