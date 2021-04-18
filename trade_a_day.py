@@ -1,5 +1,9 @@
 from binance.client import Client
+from binance.websockets import BinanceSocketManager
+from binance.exceptions import BinanceAPIException, BinanceOrderException
 import yaml
+import pandas as pd
+import time
 import sys
 
 with open(r'binance_secrets.yaml') as file:
