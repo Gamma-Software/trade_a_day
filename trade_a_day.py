@@ -1,6 +1,7 @@
 from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from binance.exceptions import BinanceAPIException, BinanceOrderException
+from twisted.internet import reactor
 import yaml
 import pandas as pd
 import time
@@ -71,3 +72,6 @@ while True:
                 print(e)
 
     time.sleep(0.1)
+
+# Stop the web socket
+reactor.stop()
