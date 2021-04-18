@@ -34,6 +34,15 @@ if client.get_system_status()["status"] != 0:
 price = {pair: pd.DataFrame(columns=['date', 'price']), 'error': False}
 
 
+# check for it like so
+def process_message(msg):
+    if msg['e'] == 'error':
+        # close and restart the socket
+        print("e")
+    else:
+        print(msg["c"])
+
+
 def pairs_trade(msg):
     """ define how to process incoming WebSocket messages """
     if msg['e'] != 'error':
