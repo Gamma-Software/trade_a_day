@@ -6,6 +6,10 @@ import pandas as pd
 import time
 import sys
 
+# TODO check if the currency to use needs to be converted if the pair is not
+
+print("Buy me some cryptos / my P2P id: xxxxx")
+
 with open(r'binance_secrets.yaml') as file:
     # The FullLoader parameter handles the conversion from YAML
     # scalar values to Python the dictionary format
