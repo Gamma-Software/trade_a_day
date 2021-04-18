@@ -74,4 +74,5 @@ while True:
     time.sleep(0.1)
 
 # Stop the web socket
+bsm.stop_socket(conn_key)
 reactor.stop()
